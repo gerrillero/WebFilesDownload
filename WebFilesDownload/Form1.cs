@@ -14,12 +14,12 @@ namespace WebFilesDownload
 {
     public partial class Form1 : Form
     {
-        private const String msgCaption = "Web Files Download";
-        private String extension;
-        private List<String> fileLinks = new List<String>();
-        private Int32 countFiles = 0;
-        private Double totalKbDownloaded = 0.00;
-        private Int64 totalBytesDownloaded = 0;
+        private const string msgCaption = "Web Files Download";
+        private string extension;
+        private List<string> fileLinks = new List<string>();
+        private int countFiles = 0;
+        //private double totalKbDownloaded = 0.00;
+        private long totalBytesDownloaded = 0;
 
         public Form1()
         {
@@ -27,7 +27,7 @@ namespace WebFilesDownload
             GetFileExtension();
             txbFolder.Text = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             btnDownload.Enabled = false;
-            lblTotalFiles.Text = "Total files: " + countFiles + " / " + fileLinks.Count;
+            lblTotalFiles.Text = $"Total files: {countFiles} / {fileLinks.Count}";
         }
 
         private void btnDownload_Click(object sender, EventArgs e)
@@ -40,15 +40,15 @@ namespace WebFilesDownload
             DialogResult result = folderBrowserDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
-                String path = folderBrowserDialog1.SelectedPath;
+                string path = folderBrowserDialog1.SelectedPath;
                 txbFolder.Text = path;
             }
         }
 
         private void DownloadFiles()
         {
-            String filePath = txbFolder.Text;
-            if (String.IsNullOrEmpty(filePath))
+            var filePath = txbFolder.Text;
+            if (string.IsNullOrEmpty(filePath))
             {
                 MessageBox.Show("Select the folder where you want to save your files!", msgCaption);
             }
@@ -57,9 +57,9 @@ namespace WebFilesDownload
                 btnDownload.Text = "Downloading...";
                 btnDownload.Enabled = false;
 
-                foreach (String file in fileLinks)
+                foreach (var file in fileLinks)
                 {
-                    String fileName = GetFileName(file);
+                    var fileName = GetFileName(file);
 
 
                     if (fileName.Length > 0)
@@ -91,18 +91,18 @@ namespace WebFilesDownload
         {
             
             progressBar1.Value = e.ProgressPercentage;
-            //lblStatus.Text = String.Format("Downloading: {0} of {1} kb", (e.BytesReceived / 1024), (e.TotalBytesToReceive / 1024));
+            //lblStatus.Text = string.Format("Downloading: {0} of {1} kb", (e.BytesReceived / 1024), (e.TotalBytesToReceive / 1024));
             //totalKbDownloaded += (e.TotalBytesToReceive / 1024);
-            //lblTotalDownloaded.Text = String.Format("Total downloaded: {0} kb", totalKbDownloaded);
+            //lblTotalDownloaded.Text = string.Format("Total downloaded: {0} kb", totalKbDownloaded);
 
-            lblStatus.Text = String.Format("Downloading: {0} of {1}", SizeSuffix(e.BytesReceived), SizeSuffix(e.TotalBytesToReceive));
+            lblStatus.Text = string.Format("Downloading: {0} of {1}", SizeSuffix(e.BytesReceived), SizeSuffix(e.TotalBytesToReceive));
             totalBytesDownloaded += e.TotalBytesToReceive;
-            //lblTotalDownloaded.Text = String.Format("Total downloaded: {0}", SizeSuffix(totalBytesDownloaded));
+            //lblTotalDownloaded.Text = string.Format("Total downloaded: {0}", SizeSuffix(totalBytesDownloaded));
         }
 
 
-        private static readonly String[] SizeSuffixes = { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
-        private static String SizeSuffix(Int64 value)
+        private static readonly string[] SizeSuffixes = { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+        private static string SizeSuffix(Int64 value)
         {
             if (value < 0) { return "-" + SizeSuffix(-value); }
             if (value == 0) { return "0.0 bytes"; }
@@ -110,7 +110,7 @@ namespace WebFilesDownload
             Int32 mag = (Int32)Math.Log(value, 1024);
             Decimal adjustedSize = (Decimal)value / (1L << (mag * 10));
 
-            return String.Format("{0:n1} {1}", adjustedSize, SizeSuffixes[mag]);
+            return string.Format("{0:n1} {1}", adjustedSize, SizeSuffixes[mag]);
         }
 
 
@@ -124,9 +124,9 @@ namespace WebFilesDownload
             lblTotalFiles.Text = "Total files: " + countFiles + " / " + fileLinks.Count;
         }
 
-        private String GetFileName(String file)
+        private string GetFileName(string file)
         {
-            String result = file.Split('/').Last();
+            string result = file.Split('/').Last();
 
             if (result.Contains("%20"))
                 result = result.Replace("%20", "_");
@@ -142,7 +142,7 @@ namespace WebFilesDownload
             {
                 using (WebClient wc = new WebClient())
                 {
-                    String sourceCode = wc.DownloadString(txbUrl.Text);
+                    string sourceCode = wc.DownloadString(txbUrl.Text);
 
                     // Clear lists
                     chklstFiles.Items.Clear();
@@ -154,16 +154,16 @@ namespace WebFilesDownload
                     HtmlNode node = doc.DocumentNode;
                     HtmlNodeCollection nodes = node.SelectNodes("//a[@href]");
 
-                    List<String> links = new List<String>();
+                    List<string> links = new List<string>();
                     foreach (HtmlNode item in nodes)
                     {
-                        String link = item.Attributes["href"].Value;
+                        string link = item.Attributes["href"].Value;
                         if (link.Contains(extension))
                         {
                             // If link starts with / then is absolute path
                             if (link.StartsWith("/"))
                             {
-                                String fileName = GetFileName(link);
+                                string fileName = GetFileName(link);
                                 link = txbUrl.Text + fileName;
                             }
 
@@ -171,14 +171,14 @@ namespace WebFilesDownload
                         }
                     }
 
-                    foreach (String file in links)
+                    foreach (string file in links)
                     {
                         if (file.LastIndexOf(extension) != 1)
                         {
                             fileLinks.Add(file.ToString());
 
-                            String itemName = GetFileName(file);
-                            if (!String.IsNullOrEmpty(itemName))
+                            string itemName = GetFileName(file);
+                            if (!string.IsNullOrEmpty(itemName))
                                 chklstFiles.Items.Add(itemName, CheckState.Checked);
                         }
                     }
@@ -188,7 +188,7 @@ namespace WebFilesDownload
                     else
                     {
                         btnDownload.Enabled = false;
-                        MessageBox.Show(String.Format("No {0} files were found!", extension), msgCaption);
+                        MessageBox.Show(string.Format("No {0} files were found!", extension), msgCaption);
                     }
                 }
             }
@@ -222,10 +222,10 @@ namespace WebFilesDownload
         private void chklstFiles_SelectedIndexChanged(object sender, EventArgs e)
         {
             CheckedListBox clb = (CheckedListBox)sender;
-            // file = (String)clb.SelectedItem;
+            // file = (string)clb.SelectedItem;
 
             // To can check the status of the item and remove the file if the status is uncheck 
-            Int32 index = clb.SelectedIndex;
+            int index = clb.SelectedIndex;
 
             try
             {
